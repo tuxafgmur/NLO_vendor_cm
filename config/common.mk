@@ -113,15 +113,15 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     AudioFX \
     CMSettingsProvider \
-    CMUpdater \
     CustomTiles \
     LineageSetupWizard \
     Eleven \
-    ExactCalculator \
+    Calculator \
     Jelly \
     LiveLockScreenService \
     LockClock \
     Trebuchet \
+    Wallpapers \
     WallpaperPicker \
     WeatherProvider
 
@@ -132,12 +132,10 @@ PRODUCT_PACKAGES += \
 # Extra tools in CM
 PRODUCT_PACKAGES += \
     7z \
-    bash \
     bzip2 \
     curl \
     fsck.ntfs \
     gdbserver \
-    htop \
     lib7z \
     libsepol \
     micro_bench \
@@ -146,13 +144,11 @@ PRODUCT_PACKAGES += \
     mount.ntfs \
     oprofiled \
     pigz \
-    powertop \
     sqlite3 \
     strace \
     tune2fs \
     unrar \
     unzip \
-    vim \
     wget \
     zip
 
@@ -165,15 +161,12 @@ PRODUCT_PACKAGES += \
     libhealthd.cm
 endif
 
-# ExFAT support
-WITH_EXFAT ?= true
-ifeq ($(WITH_EXFAT),true)
+# Exfat support
 TARGET_USES_EXFAT := true
 PRODUCT_PACKAGES += \
     mount.exfat \
     fsck.exfat \
     mkfs.exfat
-endif
 
 # Openssh
 PRODUCT_PACKAGES += \
@@ -210,18 +203,11 @@ PRODUCT_PACKAGES += \
 PRODUCT_BOOT_JARS += \
     telephony-ext
 
-# These packages are excluded from user builds
-ifneq ($(TARGET_BUILD_VARIANT),user)
+# Mem and su (all build variants)
 PRODUCT_PACKAGES += \
     procmem \
-    procrank
-
-# Conditionally build in su
-ifeq ($(WITH_SU),true)
-PRODUCT_PACKAGES += \
+    procrank \
     su
-endif
-endif
 
 DEVICE_PACKAGE_OVERLAYS += vendor/cm/overlay/common
 
