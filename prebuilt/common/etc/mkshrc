@@ -1,0 +1,15 @@
+# Minimal /system/etc/mkshrc for Android
+# Copyright (c) 2010, 2012, 2013, 2014 Thorsten Glaser <tg@mirbsd.org>
+# Tuxafgmur - Dhollmen
+
+: ${HOSTNAME:=$(getprop ro.cm.device)}
+: ${TMPDIR:=/data/local/tmp}
+: ${USER:=$(typeset x=$(id); x=${x#*\(}; print -r -- ${x%%\)*})} [ $USER_ID = "0" ] && PS1='[root] $PWD: ' || PS1='user $PWD: '
+export HOSTNAME TMPDIR PS1 USER
+
+[ "z$ANDROID_SOCKET_adbd" != "z" ] && resize
+
+alias cd..='cd ..'
+alias la='ls -al'
+alias ll='ls -l'
+alias ls='ls -an'

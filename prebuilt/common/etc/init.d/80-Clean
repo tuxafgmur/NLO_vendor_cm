@@ -1,0 +1,38 @@
+#!/system/bin/sh
+# Copyright 2014-2017 Tuxafgmur - Dhollmen
+
+[ -f /data/.lastclean ] && . /data/.lastclean
+
+LASTDATE=$(($LASTDATE + 432000))
+
+TODAY=$(date -u +%s)
+
+if [ $TODAY -ge $LASTDATE ]; then
+
+    rm -fr /data/data/com.android.shell/files/bugreports
+    rm -f  /data/local/tmp/*
+    rm -f  /data/tombstones/*
+    rm -f  /data/system/uiderrors.txt
+    rm -f  /data/system/dropbox/*
+    rm -f  /data/system/heapdump/*
+
+    cd /data/dalvik-cache/arm
+    if [ "$?" != "0" ]; then
+        for q in *; do
+            a=$(echo $q|cut -d'@' -f1)
+            b=$(echo $q|cut -d'@' -f2)
+            c=$(echo $q|cut -d'@' -f3)
+            case $c in
+                boot.art)
+                ;;
+                boot.oat)
+                ;;
+                *)  FILE="/$a/$b/$c"
+                    [ -d $FILE ] || rm $q
+                ;;
+            esac
+        done
+    fi
+    LASTDATE=$TODAY
+    echo "LASTDATE=$LASTDATE" > /data/.lastclean
+fi
