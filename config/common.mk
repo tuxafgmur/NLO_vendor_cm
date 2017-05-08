@@ -11,25 +11,14 @@ PRODUCT_PROPERTY_OVERRIDES += \
 endif
 
 PRODUCT_PROPERTY_OVERRIDES += \
-    keyguard.no_require_sim=true
-
-PRODUCT_PROPERTY_OVERRIDES += \
+    keyguard.no_require_sim=true \
+    persist.sys.dun.override=0 \
     ro.build.selinux=1
 
 # Default sounds
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.config.alarm_alert=Tourmaline.ogg \
     ro.config.notification_sound=Omicron.ogg
-
-ifneq ($(TARGET_BUILD_VARIANT),user)
-# Thank you, please drive thru!
-PRODUCT_PROPERTY_OVERRIDES += persist.sys.dun.override=0
-endif
-
-ifneq ($(TARGET_BUILD_VARIANT),eng)
-# Enable ADB authentication
-ADDITIONAL_DEFAULT_PROPERTIES += ro.adb.secure=1
-endif
 
 # Backup Tool
 PRODUCT_COPY_FILES += \
@@ -54,18 +43,18 @@ PRODUCT_COPY_FILES += \
     vendor/cm/prebuilt/common/bin/sysinit:system/bin/sysinit
 
 # Dhollmen files
- PRODUCT_COPY_FILES += \
+PRODUCT_COPY_FILES += \
     vendor/cm/prebuilt/common/etc/mkshrc:system/etc/mkshrc \
     vendor/cm/prebuilt/common/xbin/busybox:system/xbin/busybox \
     vendor/cm/prebuilt/common/xbin/sysro:system/xbin/sysro \
     vendor/cm/prebuilt/common/xbin/sysrw:system/xbin/sysrw \
-    vendor/cm/prebuilt/common/xbin/zipalign:system/xbin/zipalign    
+    vendor/cm/prebuilt/common/xbin/zipalign:system/xbin/zipalign
 
 # Copy over added mimetype supported in libcore.net.MimeUtils
 PRODUCT_COPY_FILES += \
     vendor/cm/prebuilt/common/lib/content-types.properties:system/lib/content-types.properties
 
-# Enable SIP+VoIP on all targets
+# Enable SIP+VoIP
 PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.software.sip.voip.xml:system/etc/permissions/android.software.sip.voip.xml
 
@@ -73,15 +62,15 @@ PRODUCT_COPY_FILES += \
 PRODUCT_COPY_FILES += \
     frameworks/base/data/keyboards/Vendor_045e_Product_028e.kl:system/usr/keylayout/Vendor_045e_Product_0719.kl
 
-# This is CM!
+# CM-specific files
 PRODUCT_COPY_FILES += \
+    vendor/cm/prebuilt/common/etc/init.local.rc:root/init.cm.rc \
     vendor/cm/config/permissions/com.cyanogenmod.android.xml:system/etc/permissions/com.cyanogenmod.android.xml
 
 # Theme engine
 include vendor/cm/config/themes_common.mk
 
 ifneq ($(TARGET_DISABLE_CMSDK), true)
-# CMSDK
 include vendor/cm/config/cmsdk_common.mk
 endif
 
@@ -94,7 +83,7 @@ PRODUCT_PACKAGES += \
     Profiles \
     WeatherManagerService
 
-# Optional CM packages
+# Optional packages
 PRODUCT_PACKAGES += \
     libemoji \
     LiveWallpapersPicker \
@@ -106,27 +95,27 @@ PRODUCT_PACKAGES += \
     libprotobuf-cpp-full \
     librsjni
 
-# Custom CM packages
+# Custom packages
 PRODUCT_PACKAGES += \
     AudioFX \
     CMSettingsProvider \
-    CustomTiles \
-    LineageSetupWizard \
-    Eleven \
     Calculator \
+    CustomTiles \
+    Eleven \
     Jelly \
+    LineageSetupWizard \
     LiveLockScreenService \
     LockClock \
     Trebuchet \
-    Wallpapers \
     WallpaperPicker \
+    Wallpapers \
     WeatherProvider
 
 # Exchange support
 PRODUCT_PACKAGES += \
     Exchange2
 
-# Extra tools in CM
+# Extra tools
 PRODUCT_PACKAGES += \
     7z \
     bzip2 \
@@ -141,6 +130,7 @@ PRODUCT_PACKAGES += \
     mount.ntfs \
     oprofiled \
     pigz \
+    rsync \
     sqlite3 \
     strace \
     tune2fs \
@@ -175,10 +165,6 @@ PRODUCT_PACKAGES += \
     ssh-keygen \
     start-ssh
 
-# rsync
-PRODUCT_PACKAGES += \
-    rsync
-
 # Stagefright FFMPEG plugin
 PRODUCT_PACKAGES += \
     libffmpeg_extractor \
@@ -212,83 +198,15 @@ PRODUCT_VERSION_MAJOR = 14
 PRODUCT_VERSION_MINOR = 1
 PRODUCT_VERSION_MAINTENANCE := 0
 
-ifeq ($(TARGET_VENDOR_SHOW_MAINTENANCE_VERSION),true)
-    CM_VERSION_MAINTENANCE := $(PRODUCT_VERSION_MAINTENANCE)
-else
-    CM_VERSION_MAINTENANCE := 0
-endif
+CM_VERSION_MAINTENANCE := $(PRODUCT_VERSION_MAINTENANCE)
 
-# Set CM_BUILDTYPE from the env RELEASE_TYPE, for jenkins compat
-
-ifndef CM_BUILDTYPE
-    ifdef RELEASE_TYPE
-        # Starting with "CM_" is optional
-        RELEASE_TYPE := $(shell echo $(RELEASE_TYPE) | sed -e 's|^CM_||g')
-        CM_BUILDTYPE := $(RELEASE_TYPE)
-    endif
-endif
-
-# Filter out random types, so it'll reset to UNOFFICIAL
-ifeq ($(filter RELEASE NIGHTLY SNAPSHOT EXPERIMENTAL,$(CM_BUILDTYPE)),)
-    CM_BUILDTYPE :=
-endif
-
-ifdef CM_BUILDTYPE
-    ifneq ($(CM_BUILDTYPE), SNAPSHOT)
-        ifdef CM_EXTRAVERSION
-            # Force build type to EXPERIMENTAL
-            CM_BUILDTYPE := EXPERIMENTAL
-            # Remove leading dash from CM_EXTRAVERSION
-            CM_EXTRAVERSION := $(shell echo $(CM_EXTRAVERSION) | sed 's/-//')
-            # Add leading dash to CM_EXTRAVERSION
-            CM_EXTRAVERSION := -$(CM_EXTRAVERSION)
-        endif
-    else
-        ifndef CM_EXTRAVERSION
-            # Force build type to EXPERIMENTAL, SNAPSHOT mandates a tag
-            CM_BUILDTYPE := EXPERIMENTAL
-        else
-            # Remove leading dash from CM_EXTRAVERSION
-            CM_EXTRAVERSION := $(shell echo $(CM_EXTRAVERSION) | sed 's/-//')
-            # Add leading dash to CM_EXTRAVERSION
-            CM_EXTRAVERSION := -$(CM_EXTRAVERSION)
-        endif
-    endif
-else
-    # If CM_BUILDTYPE is not defined, set to UNOFFICIAL
-    CM_BUILDTYPE := UNOFFICIAL
-    CM_EXTRAVERSION :=
-endif
-
-ifeq ($(CM_BUILDTYPE), UNOFFICIAL)
-    ifneq ($(TARGET_UNOFFICIAL_BUILD_ID),)
-        CM_EXTRAVERSION := -$(TARGET_UNOFFICIAL_BUILD_ID)
-    endif
-endif
-
-ifeq ($(CM_BUILDTYPE), RELEASE)
-    ifndef TARGET_VENDOR_RELEASE_BUILD_ID
-        LINEAGE_VERSION := $(PRODUCT_VERSION_MAJOR).$(PRODUCT_VERSION_MINOR).$(PRODUCT_VERSION_MAINTENANCE)$(PRODUCT_VERSION_DEVICE_SPECIFIC)-$(CM_BUILD)
-    else
-        ifeq ($(TARGET_BUILD_VARIANT),user)
-            ifeq ($(CM_VERSION_MAINTENANCE),0)
-                LINEAGE_VERSION := $(PRODUCT_VERSION_MAJOR).$(PRODUCT_VERSION_MINOR)-$(TARGET_VENDOR_RELEASE_BUILD_ID)-$(CM_BUILD)
-            else
-                LINEAGE_VERSION := $(PRODUCT_VERSION_MAJOR).$(PRODUCT_VERSION_MINOR).$(CM_VERSION_MAINTENANCE)-$(TARGET_VENDOR_RELEASE_BUILD_ID)-$(CM_BUILD)
-            endif
-        else
-            LINEAGE_VERSION := $(PRODUCT_VERSION_MAJOR).$(PRODUCT_VERSION_MINOR).$(PRODUCT_VERSION_MAINTENANCE)$(PRODUCT_VERSION_DEVICE_SPECIFIC)-$(CM_BUILD)
-        endif
-    endif
-else
-    ifeq ($(CM_VERSION_MAINTENANCE),0)
-        LINEAGE_VERSION := $(PRODUCT_VERSION_MAJOR).$(PRODUCT_VERSION_MINOR)-$(shell date -u +%Y%m%d)-$(CM_BUILDTYPE)$(CM_EXTRAVERSION)-$(CM_BUILD)
-    else
-        LINEAGE_VERSION := $(PRODUCT_VERSION_MAJOR).$(PRODUCT_VERSION_MINOR).$(CM_VERSION_MAINTENANCE)-$(shell date -u +%Y%m%d)-$(CM_BUILDTYPE)$(CM_EXTRAVERSION)-$(CM_BUILD)
-    endif
-endif
+CM_POSTFIX := $(shell date +"%Y%m%d")
+CM_BUILDTYPE := UNOFFICIAL
+LINEAGE_VERSION := Dhollmen-$(PLATFORM_VERSION)-$(CM_BUILD).$(CM_POSTFIX)
+CM_MOD_VERSION := $(PRODUCT_VERSION_MAJOR)-$(PRODUCT_VERSION_MINOR).$(PRODUCT_VERSION_MAINTENANCE)-$(CM_BUILD).$(CM_POSTFIX)
 
 PRODUCT_PROPERTY_OVERRIDES += \
+    ro.lineage.version=$(PRODUCT_VERSION_MAJOR).$(PRODUCT_VERSION_MINOR).$(PRODUCT_VERSION_MAINTENANCE) \
     ro.cm.version=$(LINEAGE_VERSION) \
     ro.cm.releasetype=$(CM_BUILDTYPE) \
     ro.modversion=$(LINEAGE_VERSION) \
@@ -329,6 +247,5 @@ PRODUCT_PROPERTY_OVERRIDES += \
 
 -include $(WORKSPACE)/build_env/image-auto-bits.mk
 -include vendor/cm/config/partner_gms.mk
--include vendor/cyngn/product.mk
 
 $(call prepend-product-if-exists, vendor/extra/product.mk)
