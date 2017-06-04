@@ -11,7 +11,7 @@ if [ $TODAY -ge $LASTDATE ]; then
 
     rm -fr /data/data/com.android.shell/files/bugreports
     rm -f  /data/local/tmp/*
-    rm -f  /data/tombstones/*
+    rm -f  /data/tombstones/*/*
     rm -f  /data/system/uiderrors.txt
     rm -f  /data/system/dropbox/*
     rm -f  /data/system/heapdump/*
