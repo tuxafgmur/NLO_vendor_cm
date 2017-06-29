@@ -100,7 +100,6 @@ PRODUCT_PACKAGES += \
     AudioFX \
     CMSettingsProvider \
     Calculator \
-    CustomTiles \
     Eleven \
     Jelly \
     LineageSetupWizard \
