@@ -108,7 +108,6 @@ PRODUCT_PACKAGES += \
     Eleven \
     Jelly \
     LineageSetupWizard \
-    LiveLockScreenService \
     LockClock \
     Trebuchet \
     WallpaperPicker \
